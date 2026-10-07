@@ -25,10 +25,13 @@ class SQLiteKnowledgeStore(KnowledgeStore):
         self._path.parent.mkdir(parents=True, exist_ok=True)
         self._db = sqlite3.connect(self._path, check_same_thread=False)
         self._db.execute(
-            "CREATE TABLE IF NOT EXISTS documents (document_id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
+            "CREATE TABLE IF NOT EXISTS documents ("
+            "document_id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
         )
         self._db.execute(
-            "CREATE TABLE IF NOT EXISTS chunks (chunk_id TEXT PRIMARY KEY, document_id TEXT NOT NULL, payload TEXT NOT NULL)"
+            "CREATE TABLE IF NOT EXISTS chunks ("
+            "chunk_id TEXT PRIMARY KEY, document_id TEXT NOT NULL, "
+            "payload TEXT NOT NULL)"
         )
         self._db.commit()
         self._load()
