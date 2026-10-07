@@ -32,7 +32,8 @@ class SQLiteMemoryStore:
             db.execute("PRAGMA journal_mode=WAL")
             db.execute("PRAGMA busy_timeout=5000")
             db.execute(
-                "CREATE TABLE IF NOT EXISTS memories (memory_id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
+                "CREATE TABLE IF NOT EXISTS memories ("
+                "memory_id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
             )
         self._load()
 
@@ -67,7 +68,8 @@ class SQLiteMemoryStore:
         )
         with self._lock, self._connect() as db:
             db.execute(
-                "INSERT INTO memories(memory_id,payload) VALUES(?,?) ON CONFLICT(memory_id) DO UPDATE SET payload=excluded.payload",
+                "INSERT INTO memories(memory_id,payload) VALUES(?,?) "
+                "ON CONFLICT(memory_id) DO UPDATE SET payload=excluded.payload",
                 (item.memory_id, payload),
             )
 

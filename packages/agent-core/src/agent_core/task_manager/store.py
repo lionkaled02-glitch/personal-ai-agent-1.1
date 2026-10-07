@@ -19,13 +19,18 @@ class TaskStore:
         with self._connect() as db:
             db.execute("PRAGMA journal_mode=WAL")
             db.execute(
-                "CREATE TABLE IF NOT EXISTS tasks (id TEXT PRIMARY KEY, state TEXT NOT NULL, payload TEXT NOT NULL, updated_at TEXT NOT NULL)"
+                "CREATE TABLE IF NOT EXISTS tasks ("
+                "id TEXT PRIMARY KEY, state TEXT NOT NULL, "
+                "payload TEXT NOT NULL, updated_at TEXT NOT NULL)"
             )
             db.execute(
-                "CREATE TABLE IF NOT EXISTS events (id TEXT PRIMARY KEY, task_id TEXT, payload TEXT NOT NULL, timestamp TEXT NOT NULL)"
+                "CREATE TABLE IF NOT EXISTS events (id TEXT PRIMARY KEY, "
+                "task_id TEXT, payload TEXT NOT NULL, timestamp TEXT NOT NULL)"
             )
             db.execute(
-                "CREATE TABLE IF NOT EXISTS idempotency (key TEXT PRIMARY KEY, task_id TEXT NOT NULL, created_at TEXT NOT NULL)"
+                "CREATE TABLE IF NOT EXISTS idempotency ("
+                "key TEXT PRIMARY KEY, task_id TEXT NOT NULL, "
+                "created_at TEXT NOT NULL)"
             )
 
     def _connect(self) -> sqlite3.Connection:
@@ -37,7 +42,10 @@ class TaskStore:
         )
         with self._lock, self._connect() as db:
             db.execute(
-                "INSERT INTO tasks(id,state,payload,updated_at) VALUES(?,?,?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state,payload=excluded.payload,updated_at=excluded.updated_at",
+                "INSERT INTO tasks(id,state,payload,updated_at) VALUES(?,?,?,?) "
+                "ON CONFLICT(id) DO UPDATE SET "
+                "state=excluded.state,payload=excluded.payload,"
+                "updated_at=excluded.updated_at",
                 (task.id, task.state.value, payload, task.updated_at.isoformat()),
             )
 
@@ -126,17 +134,21 @@ class TaskStore:
                 ).fetchone()
                 if row:
                     rows = db.execute(
-                        "SELECT payload FROM events WHERE task_id=? AND (timestamp > ? OR (timestamp = ? AND id > ?)) ORDER BY timestamp ASC, id ASC LIMIT ?",
+                        "SELECT payload FROM events WHERE task_id=? AND "
+                        "(timestamp > ? OR (timestamp = ? AND id > ?)) "
+                        "ORDER BY timestamp ASC, id ASC LIMIT ?",
                         (task_id, row[0], row[0], row[1], limit),
                     ).fetchall()
                 else:
                     rows = db.execute(
-                        "SELECT payload FROM events WHERE task_id=? ORDER BY timestamp ASC, id ASC LIMIT ?",
+                        "SELECT payload FROM events WHERE task_id=? "
+                        "ORDER BY timestamp ASC, id ASC LIMIT ?",
                         (task_id, limit),
                     ).fetchall()
             else:
                 rows = db.execute(
-                    "SELECT payload FROM events WHERE task_id=? ORDER BY timestamp ASC, id ASC LIMIT ?",
+                    "SELECT payload FROM events WHERE task_id=? "
+                    "ORDER BY timestamp ASC, id ASC LIMIT ?",
                     (task_id, limit),
                 ).fetchall()
         return [json.loads(row[0]) for row in rows]

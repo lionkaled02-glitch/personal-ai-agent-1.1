@@ -24,7 +24,7 @@ from .documents import (
     generate_pptx,
     generate_xlsx,
 )
-from .subtitles import make_srt
+from .subtitles import make_srt as make_srt
 
 __all__.append("make_srt")
 __all__ += [
