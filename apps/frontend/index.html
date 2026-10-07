@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>المساعد الشخصي الذكي</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:980px;margin:32px auto;padding:0 18px;line-height:1.6;background:#fafafa;color:#171717}
+textarea{width:100%;min-height:120px;box-sizing:border-box;padding:12px;border:1px solid #ccc;border-radius:10px}
+button{padding:9px 14px;margin:4px;border:1px solid #bbb;border-radius:8px;background:white;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}.primary{background:#171717;color:white}.danger{background:#fee}.card{background:white;border:1px solid #ddd;border-radius:12px;padding:16px;margin:14px 0}
+pre{background:#111;color:#eee;padding:12px;border-radius:10px;overflow:auto;direction:ltr;text-align:left;min-height:120px}.approval{border:1px solid #e0c36b;padding:12px;margin:8px 0;border-radius:10px;background:#fffdf0}
+.small{color:#666;font-size:.9rem}.result{white-space:pre-wrap}
+</style></head>
+<body>
+<h1>المساعد الشخصي الذكي</h1>
+<p class="small">يعمل محلياً. الوضع الافتراضي لا يحتاج مفتاح API. العمليات الحساسة تتطلب موافقتك.</p>
+<div class="card">
+<textarea id="request" placeholder="مثال: اقرأ الملف report.pdf واشرح أهم النقاط..."></textarea><br>
+<button class="primary" id="run">تنفيذ</button><button id="cancel" disabled>إلغاء</button><button id="resume" disabled>استئناف</button>
+</div>
+<div class="card"><b>المهمة:</b> <span id="task">-</span><br><b>الحالة:</b> <span id="status">-</span></div>
+<div class="card"><b>الموافقات المطلوبة</b><div id="approvals">-</div></div>
+<div class="card"><b>النتيجة</b><div id="result" class="result">-</div></div>
+<div class="card"><b>الأحداث</b><pre id="events"></pre></div>
+<script>
+const $=id=>document.getElementById(id); let currentId=null, socket=null, pollTimer=null;
+const terminal=new Set(['COMPLETED','FAILED','CANCELLED']);
+function appendEvent(x){$('events').textContent+=JSON.stringify(x,null,2)+'\n';$('events').scrollTop=$('events').scrollHeight;}
+async function getTask(){if(!currentId)return null;const r=await fetch('/tasks/'+encodeURIComponent(currentId));if(!r.ok)return null;const t=await r.json();$('status').textContent=t.state;$('result').textContent=t.result==null?(t.error||'-'):JSON.stringify(t.result,null,2);$('resume').disabled=t.state!=='PAUSED';return t;}
+async function refreshApprovals(){if(!currentId)return;const a=await fetch('/approvals').then(r=>r.json());const mine=a.filter(x=>x.task_id===currentId);$('approvals').innerHTML=mine.length?mine.map(x=>`<div class="approval"><b>${x.tool_name}</b> — ${x.permission_level}<br>${x.reason}<br><button data-a="${x.task_id}" data-s="${x.step_id}" data-v="true">موافقة</button><button class="danger" data-a="${x.task_id}" data-s="${x.step_id}" data-v="false">رفض</button></div>`).join(''):'لا توجد موافقات معلقة';document.querySelectorAll('#approvals button').forEach(b=>b.onclick=async()=>{await fetch('/approvals/'+b.dataset.a+'/'+b.dataset.s+'?approved='+b.dataset.v,{method:'POST'});await refreshApprovals();});}
+function connectEvents(){if(socket)socket.close();socket=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws/tasks/'+currentId);socket.onmessage=e=>{const x=JSON.parse(e.data);appendEvent(x);if(x.type==='TASK_STREAM_COMPLETE')return;};socket.onclose=()=>{};}
+async function poll(){const t=await getTask();await refreshApprovals();if(t&&!terminal.has(t.state))pollTimer=setTimeout(poll,500);else{$('run').disabled=false;$('cancel').disabled=true;}}
+$('run').onclick=async()=>{const request=$('request').value.trim();if(!request)return;$('run').disabled=true;$('cancel').disabled=false;$('resume').disabled=true;$('events').textContent='';$('result').textContent='-';$('approvals').textContent='-';const r=await fetch('/tasks',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({request})});const data=await r.json();if(!r.ok){$('events').textContent=JSON.stringify(data,null,2);$('run').disabled=false;$('cancel').disabled=true;return;}currentId=data.task_id;$('task').textContent=currentId;connectEvents();poll();};
+$('cancel').onclick=async()=>{if(currentId)await fetch('/tasks/'+currentId+'/cancel',{method:'POST'});};
+$('resume').onclick=async()=>{if(currentId){const r=await fetch('/tasks/'+currentId+'/resume',{method:'POST'});if(r.ok){connectEvents();poll();}}};
+</script></body></html>

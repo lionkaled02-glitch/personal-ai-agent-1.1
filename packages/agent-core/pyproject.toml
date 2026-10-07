@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agent-core"
+version = "1.0.0"
+description = "Core abstractions for a modular personal autonomous AI agent: tasks, planner, executor, permissioned tools, model providers, workspace, document and memory retrieval, safe computer interaction, visual verification, provider-neutral voice transport, browser foundation, and bounded coding contracts."
+readme = "README.md"
+requires-python = ">=3.11"
+# Deliberately minimal: the core must not depend on any vendor SDK or
+# parser library.
+dependencies = ["pydantic>=2.7,<3"]
+
+# Real provider adapters are optional extras. Installing one is required
+# only when you actually select that provider (MODEL_PROVIDER=...).
+[project.optional-dependencies]
+openai = ["openai>=1.40,<3"]
+# Optional local RGB comparison support (Phase 7). Metadata-only validation
+# and identical-payload checks do not require Pillow.
+vision-image = ["Pillow>=10,<13"]
+# Document parsing (Phase 4). Without it, the binary parsers (PDF, DOCX,
+# PPTX, XLSX) fail with a structured `parser_unavailable` error at parse
+# time; TXT and Markdown parsing never requires any extra.
+docs = [
+    "pypdf>=4.0,<7",
+    "python-docx>=1.0,<2",
+    "python-pptx>=1.0,<2",
+    "openpyxl>=3.1,<4",
+]
+# Windows computer-control adapter (Phase 6). Imported only after explicit
+# provider construction on Windows; core/fake-provider tests need no extra.
+computer-windows = [
+    "pywinauto>=0.6.9,<0.7; platform_system == 'Windows'",
+    "pywin32>=306,<312; platform_system == 'Windows'",
+    "Pillow>=10,<13; platform_system == 'Windows'",
+]
+# Optional Phase 9 provider. Installing the Python extra does not download
+# Chromium; browser binaries are an explicit, separate local setup step.
+browser-playwright = ["playwright>=1.44,<2"]
+media-image = ["Pillow>=10,<13"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agent_core"]

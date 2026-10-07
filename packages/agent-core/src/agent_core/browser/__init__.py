@@ -1,0 +1,115 @@
+"""Bounded browser agent foundation with an optional Playwright provider.
+
+Page-derived text is always untrusted data, not instructions. The package
+exports explicit navigation and interaction operations only; arbitrary code,
+cookies, storage, credentials, profile access, and unrestricted browsing are
+not supported.
+"""
+
+from .errors import (
+    BrowserError,
+    BrowserLimitError,
+    BrowserPermissionError,
+    BrowserProviderError,
+    BrowserProviderUnavailableError,
+    BrowserTimeoutError,
+    BrowserValidationError,
+)
+from .interfaces import BrowserProvider
+from .limits import BrowserLimits
+from .mock import MockBrowserProvider, MockElementDefinition
+from .models import (
+    BrowserActionResult,
+    BrowserActionType,
+    BrowserBoundingBox,
+    BrowserClosePageRequest,
+    BrowserCloseSessionRequest,
+    BrowserCreatePageRequest,
+    BrowserElement,
+    BrowserElementRequest,
+    BrowserEmptyRequest,
+    BrowserFillRequest,
+    BrowserFindElementsRequest,
+    BrowserHistoryRequest,
+    BrowserKey,
+    BrowserNavigateRequest,
+    BrowserObservation,
+    BrowserOpenSessionRequest,
+    BrowserPage,
+    BrowserPageRef,
+    BrowserPageSnapshot,
+    BrowserPageStatus,
+    BrowserPressKeyRequest,
+    BrowserReadyState,
+    BrowserRecoveryAction,
+    BrowserRecoveryResult,
+    BrowserScreenshotMetadata,
+    BrowserSelectRequest,
+    BrowserSession,
+    BrowserSessionStatus,
+    BrowserVerificationResult,
+    BrowserVerificationStatus,
+    BrowserWaitRequest,
+    BrowserWaitState,
+    BrowserWaitUntil,
+)
+from .playwright_provider import PlaywrightBrowserProvider
+from .recovery import BrowserRecoveryPolicy
+from .runtime import BrowserRuntime
+from .tools import BROWSER_TOOL_NAMES, register_browser_tools
+from .url_safety import hostname_from_url, safe_observed_url, validate_http_url
+
+__all__ = [
+    "BROWSER_TOOL_NAMES",
+    "BrowserActionResult",
+    "BrowserActionType",
+    "BrowserBoundingBox",
+    "BrowserClosePageRequest",
+    "BrowserCloseSessionRequest",
+    "BrowserCreatePageRequest",
+    "BrowserElement",
+    "BrowserElementRequest",
+    "BrowserEmptyRequest",
+    "BrowserError",
+    "BrowserFillRequest",
+    "BrowserFindElementsRequest",
+    "BrowserHistoryRequest",
+    "BrowserKey",
+    "BrowserLimitError",
+    "BrowserLimits",
+    "BrowserNavigateRequest",
+    "BrowserObservation",
+    "BrowserOpenSessionRequest",
+    "BrowserPage",
+    "BrowserPageRef",
+    "BrowserPageSnapshot",
+    "BrowserPageStatus",
+    "BrowserPermissionError",
+    "BrowserPressKeyRequest",
+    "BrowserProvider",
+    "BrowserProviderError",
+    "BrowserProviderUnavailableError",
+    "BrowserReadyState",
+    "BrowserRecoveryAction",
+    "BrowserRecoveryPolicy",
+    "BrowserRecoveryResult",
+    "BrowserRuntime",
+    "BrowserScreenshotMetadata",
+    "BrowserSelectRequest",
+    "BrowserSession",
+    "BrowserSessionStatus",
+    "BrowserTimeoutError",
+    "BrowserValidationError",
+    "BrowserVerificationResult",
+    "BrowserVerificationStatus",
+    "BrowserWaitRequest",
+    "BrowserWaitState",
+    "BrowserWaitUntil",
+    "MockBrowserProvider",
+    "MockElementDefinition",
+    "PlaywrightBrowserProvider",
+    "hostname_from_url",
+    "register_browser_tools",
+    "safe_observed_url",
+    "validate_http_url",
+]

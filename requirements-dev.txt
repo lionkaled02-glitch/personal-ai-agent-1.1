@@ -1,0 +1,6 @@
+-e packages/agent-core
+-e packages/creation-agent
+-e apps/backend
+pytest>=8,<9
+ruff>=0.8,<1
+mypy>=1.13,<2

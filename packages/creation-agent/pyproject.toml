@@ -1,0 +1,11 @@
+[project]
+name = "creation-agent"
+version = "1.0.0"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2,<3"]
+
+[project.optional-dependencies]
+documents = ["python-docx>=1,<2", "openpyxl>=3.1,<4", "python-pptx>=1,<2", "reportlab>=4,<5"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

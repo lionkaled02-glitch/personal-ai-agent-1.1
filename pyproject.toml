@@ -1,0 +1,56 @@
+# Root tooling configuration ONLY — this directory is not itself a package.
+#
+# Importable code lives in:
+#   packages/agent-core   (the agent core library, see its pyproject.toml)
+#   apps/backend          (entry-point scripts, run directly, not installed)
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B", "SIM", "C4", "RUF"]
+# RUF012: pydantic `model_config = ConfigDict(...)` class attributes are
+# framework-managed and intentionally not ClassVar-annotated.
+ignore = ["RUF012"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+# Resolve agent_core from source so type checking does not depend on the
+# editable install (PEP 660 editables are unreliable for mypy).
+mypy_path = "packages/agent-core/src"
+files = [
+    "packages/agent-core/src",
+    "packages/agent-core/tests",
+    "apps/backend/src",
+    "apps/backend/tests",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["packages/agent-core/tests", "apps/backend/tests"]
+addopts = "-q"
+markers = [
+    "live: tests that call a real external AI API (opt-in, skipped unless credentials are present)",
+]
+
+# The OpenAI SDK (and its httpx dependency) is an optional extra; keep type
+# checking working in minimal installs.
+[[tool.mypy.overrides]]
+module = "openai"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "httpx"
+ignore_missing_imports = true
+
+# openpyxl (Phase 4 document parsing, optional extra) ships no py.typed.
+[[tool.mypy.overrides]]
+module = "openpyxl.*"
+ignore_missing_imports = true
+
+# Windows-only computer adapter (Phase 6) uses optional, untyped platform APIs.
+[[tool.mypy.overrides]]
+module = ["pywinauto", "pywinauto.*", "win32api", "PIL", "PIL.*"]
+ignore_missing_imports = true
